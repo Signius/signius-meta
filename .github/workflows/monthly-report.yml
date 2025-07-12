@@ -47,7 +47,7 @@ jobs:
         run: node set-project-fields.js
         working-directory: ./admin-scripts
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PAT}}
           GITHUB_REPOSITORY: ${{ github.repository }}
           ISSUE_TITLE: "Monthly Report for ${{ env.CURRENT_MONTH }}"
           START_DATE: "${{ env.CURRENT_MONTH }}"
