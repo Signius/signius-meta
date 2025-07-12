@@ -47,7 +47,7 @@ if (!projectId || !startDateFieldId || !endDateFieldId || !estimateFieldId) {
   // 1. Find the issue node ID
   const { repository } = await graphql(
     `
-      query($owner: String!, $name: String!, $title: String!) {
+      query($owner: String!, $name: String!) {
         repository(owner: $owner, name: $name) {
           issues(first: 20, filterBy: { states: OPEN }, orderBy: { field: CREATED_AT, direction: DESC }) {
             nodes {
@@ -59,7 +59,7 @@ if (!projectId || !startDateFieldId || !endDateFieldId || !estimateFieldId) {
         }
       }
     `,
-    { owner, name, title: issueTitle, headers: { authorization: `token ${token}` } }
+    { owner, name, headers: { authorization: `token ${token}` } }
   );
 
   // Filter issues by title since GraphQL doesn't support query parameter
