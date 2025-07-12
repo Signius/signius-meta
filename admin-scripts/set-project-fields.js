@@ -74,11 +74,11 @@ if (!projectId || !startDateFieldId || !endDateFieldId || !estimateFieldId) {
   // 2. Add the issue to the project and get the ProjectV2Item ID
   const { addProjectV2ItemById } = await graphql(
     `
-      mutation($projectId: ID!, $itemId: ID!) {
+      mutation($projectId: ID!, $contentId: ID!) {
         addProjectV2ItemById(
           input: {
             projectId: $projectId
-            itemId: $itemId
+            contentId: $contentId
           }
         ) {
           item {
@@ -89,7 +89,7 @@ if (!projectId || !startDateFieldId || !endDateFieldId || !estimateFieldId) {
     `,
     {
       projectId,
-      itemId: issue.id,
+      contentId: issue.id,
       headers: { authorization: `token ${token}` }
     }
   );
