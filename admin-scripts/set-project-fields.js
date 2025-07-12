@@ -111,7 +111,7 @@ if (!projectId || !startDateFieldId || !endDateFieldId || !estimateFieldId) {
 
     await graphql(
       `
-        mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $valueInput: ProjectV2ItemFieldValue!) {
+        mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $valueInput: ProjectV2FieldValue!) {
           updateProjectV2ItemFieldValue(
             input: {
               projectId: $projectId
