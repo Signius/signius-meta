@@ -49,7 +49,7 @@ if (!projectId || !startDateFieldId || !endDateFieldId || !estimateFieldId) {
     `
       query($owner: String!, $name: String!, $title: String!) {
         repository(owner: $owner, name: $name) {
-          issues(first: 1, filterBy: { states: OPEN }, orderBy: { field: CREATED_AT, direction: DESC }, query: $title) {
+          issues(first: 20, filterBy: { states: OPEN }, orderBy: { field: CREATED_AT, direction: DESC }) {
             nodes {
               id
               title
@@ -62,7 +62,8 @@ if (!projectId || !startDateFieldId || !endDateFieldId || !estimateFieldId) {
     { owner, name, title: issueTitle, headers: { authorization: `token ${token}` } }
   );
 
-  const issue = repository.issues.nodes[0];
+  // Filter issues by title since GraphQL doesn't support query parameter
+  const issue = repository.issues.nodes.find(node => node.title === issueTitle);
   if (!issue) {
     console.error("Issue not found");
     process.exit(1);
