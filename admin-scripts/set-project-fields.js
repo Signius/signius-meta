@@ -98,16 +98,26 @@ if (!projectId || !startDateFieldId || !endDateFieldId || !estimateFieldId) {
   console.log(`Added issue to project. ProjectV2Item ID: ${projectItemId}`);
 
   // 3. Set project fields using the ProjectV2Item ID
-  const updateField = async (fieldId, value) => {
+  const updateField = async (fieldId, value, fieldType = 'text') => {
+    let valueInput;
+
+    if (fieldType === 'date') {
+      valueInput = { date: value };
+    } else if (fieldType === 'number') {
+      valueInput = { number: parseFloat(value) };
+    } else {
+      valueInput = { text: value };
+    }
+
     await graphql(
       `
-        mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $value: String!) {
+        mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $valueInput: ProjectV2ItemFieldValue!) {
           updateProjectV2ItemFieldValue(
             input: {
               projectId: $projectId
               itemId: $itemId
               fieldId: $fieldId
-              value: { text: $value }
+              value: $valueInput
             }
           ) {
             projectV2Item {
@@ -120,15 +130,15 @@ if (!projectId || !startDateFieldId || !endDateFieldId || !estimateFieldId) {
         projectId,
         itemId: projectItemId,
         fieldId,
-        value,
+        valueInput,
         headers: { authorization: `token ${token}` }
       }
     );
   };
 
-  await updateField(startDateFieldId, startDate);
-  await updateField(endDateFieldId, endDate);
-  await updateField(estimateFieldId, estimate);
+  await updateField(startDateFieldId, startDate, 'date');
+  await updateField(endDateFieldId, endDate, 'date');
+  await updateField(estimateFieldId, estimate, 'number');
 
   console.log("Project fields updated!");
 })(); 
