@@ -1,0 +1,39 @@
+name: Monthly Report
+
+on:
+  schedule:
+    - cron: "0 0 1 * *" # Runs on the first of every month
+  workflow_dispatch: # Allows manual triggering
+
+jobs:
+  create-issue:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Generate issue content
+        id: generate-content
+        run: |
+          CURRENT_MONTH=$(date +"%Y-%m")
+          LAST_MONTH=$(date -d "-1 month" +"%Y-%m")
+          echo "CURRENT_MONTH=$CURRENT_MONTH" >> $GITHUB_ENV
+          echo "LAST_MONTH=$LAST_MONTH" >> $GITHUB_ENV
+
+          echo "::set-output name=content::### Monthly Report for $CURRENT_MONTH\n\n- https://github.com/Signius/gov-dashboard-template/commits/main/?since=$CURRENT_MONTH-01&until=$CURRENT_MONTH-30\n- https://github.com/Signius/repo-2/commits/main/?since=$CURRENT_MONTH-01&until=$CURRENT_MONTH-30\n- https://github.com/Signius/repo-3/commits/main/?since=$CURRENT_MONTH-01&until=$CURRENT_MONTH-30"
+
+      - name: Create issue
+        uses: peter-evans/create-issue@v4
+        with:
+          title: "Monthly Report for ${{ env.CURRENT_MONTH }}"
+          body: "${{ steps.generate-content.outputs.content }}"
+          labels: "report"
+
+      - name: Close last month's issue
+        uses: peter-evans/close-issue@v2
+        with:
+          issue-title: "Monthly Report for ${{ env.LAST_MONTH }}"
+          state: "closed"
+          project-board: "1"
+          status: "done"
