@@ -1,0 +1,40 @@
+{
+    "repositories": [
+        {
+            "name": "Treasury Guild",
+            "organization": "treasuryguild",
+            "repository": "treasury-apis",
+            "focus": "Treasury management and financial APIs",
+            "keyAreas": [
+                "Payment processing",
+                "Financial calculations",
+                "Treasury operations"
+            ],
+            "estimate": 500
+        },
+        {
+            "name": "Sidan Labs",
+            "organization": "sidan-lab",
+            "repository": "DRep",
+            "focus": "Decentralized reputation",
+            "keyAreas": [
+                "Data fetching",
+                "Data processing",
+                "Dashboards"
+            ],
+            "estimate": 500
+        },
+        {
+            "name": "MeshJS",
+            "organization": "MeshJS",
+            "repository": "governance",
+            "focus": "Decentralized reputation",
+            "keyAreas": [
+                "Data fetching",
+                "Data processing",
+                "Dashboards"
+            ],
+            "estimate": 500
+        }
+    ]
+}

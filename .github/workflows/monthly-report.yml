@@ -51,7 +51,6 @@ jobs:
           GITHUB_REPOSITORY: ${{ github.repository }}
           ISSUE_TITLE: "Monthly Report for ${{ env.CURRENT_MONTH }}"
           START_DATE: "${{ env.CURRENT_MONTH }}"
-          ESTIMATE: "1500"
           PROJECT_ID: ${{ secrets.PROJECT_ID }}
           START_DATE_FIELD_ID: ${{ secrets.START_DATE_FIELD_ID }}
           END_DATE_FIELD_ID: ${{ secrets.END_DATE_FIELD_ID }}

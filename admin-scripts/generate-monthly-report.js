@@ -1,4 +1,6 @@
 // admin-scripts/generate-monthly-report.js
+const fs = require('fs');
+const path = require('path');
 
 const currentMonth = process.env.CURRENT_MONTH;
 const lastMonth = process.env.LAST_MONTH;
@@ -6,6 +8,18 @@ const lastMonth = process.env.LAST_MONTH;
 if (!currentMonth) {
     console.error("CURRENT_MONTH env variable is required");
     process.exit(1);
+}
+
+// Load repository configuration
+function loadRepoConfig() {
+    try {
+        const configPath = path.join(__dirname, 'repos-config.json');
+        const configData = fs.readFileSync(configPath, 'utf8');
+        return JSON.parse(configData);
+    } catch (error) {
+        console.error('Error loading repository config:', error.message);
+        process.exit(1);
+    }
 }
 
 // Helper function to get month name
@@ -29,6 +43,79 @@ function getLastDayOfMonth(monthStr) {
     return date.getDate();
 }
 
+// Generate repository activity links section
+function generateRepoActivityLinks(repos, currentMonth, lastDayOfMonth) {
+    let linksSection = '';
+
+    repos.forEach(repo => {
+        const org = repo.organization;
+        const repoName = repo.repository;
+        const displayName = repo.name;
+
+        linksSection += `### ${displayName}
+- **Repository**: [${org}/${repoName}](https://github.com/${org}/${repoName})
+- **Commit History**: [View ${getMonthName(currentMonth)} commits](https://github.com/${org}/${repoName}/commits/main/?since=${currentMonth}-01&until=${currentMonth}-${lastDayOfMonth})
+- **Pull Requests**: [View ${getMonthName(currentMonth)} PRs](https://github.com/${org}/${repoName}/pulls?q=is%3Apr+created%3A${currentMonth}-01..${currentMonth}-${lastDayOfMonth})
+
+`;
+    });
+
+    return linksSection;
+}
+
+// Generate repository comparison table
+function generateRepoComparisonTable(repos, currentMonth, lastDayOfMonth) {
+    let tableRows = '';
+
+    repos.forEach(repo => {
+        const org = repo.organization;
+        const repoName = repo.repository;
+        const displayName = repo.name;
+
+        tableRows += `| ${displayName} | [View](https://github.com/${org}/${repoName}/commits/main/?since=${currentMonth}-01&until=${currentMonth}-${lastDayOfMonth}) | [View](https://github.com/${org}/${repoName}/pulls?q=is%3Apr+created%3A${currentMonth}-01..${currentMonth}-${lastDayOfMonth}) | [View](https://github.com/${org}/${repoName}/issues?q=is%3Aissue+created%3A${currentMonth}-01..${currentMonth}-${lastDayOfMonth}) | [View](https://github.com/${org}/${repoName}/stargazers) |
+`;
+    });
+
+    return tableRows;
+}
+
+// Generate detailed analysis section
+function generateDetailedAnalysis(repos) {
+    let analysisSection = '';
+
+    repos.forEach(repo => {
+        const displayName = repo.name;
+        const focus = repo.focus;
+        const keyAreas = repo.keyAreas.join(', ');
+        const estimate = repo.estimate;
+
+        analysisSection += `### ${displayName}
+- **Focus**: ${focus}
+- **Key Areas**: ${keyAreas}
+- **Estimated Budget**: $${estimate.toLocaleString()}
+- **Recent Activity**: Check commit history for latest developments
+
+`;
+    });
+
+    return analysisSection;
+}
+
+// Generate estimates summary
+function generateEstimatesSummary(repos) {
+    const totalEstimate = repos.reduce((sum, repo) => sum + (repo.estimate || 0), 0);
+    const avgEstimate = repos.length > 0 ? Math.round(totalEstimate / repos.length) : 0;
+
+    return `### Estimates Summary
+- **Total Estimated Budget**: $${totalEstimate.toLocaleString()}
+- **Average per Repository**: $${avgEstimate.toLocaleString()}
+- **Repositories with Estimates**: ${repos.filter(repo => repo.estimate).length}/${repos.length}
+
+`;
+}
+
+const config = loadRepoConfig();
+const repos = config.repositories;
 const monthName = getMonthName(currentMonth);
 const previousMonth = lastMonth || getPreviousMonth(currentMonth);
 const previousMonthName = getMonthName(previousMonth);
@@ -43,27 +130,13 @@ This report provides a comprehensive overview of development activities across o
 
 ## 🔗 Repository Activity Links
 
-### Treasury Guild
-- **Repository**: [treasuryguild/treasury-apis](https://github.com/treasuryguild/treasury-apis)
-- **Commit History**: [View ${monthName} commits](https://github.com/treasuryguild/treasury-apis/commits/main/?since=${currentMonth}-01&until=${currentMonth}-${lastDayOfMonth})
-- **Pull Requests**: [View ${monthName} PRs](https://github.com/treasuryguild/treasury-apis/pulls?q=is%3Apr+created%3A${currentMonth}-01..${currentMonth}-${lastDayOfMonth})
-
-### Sidan Labs
-- **Repository**: [sidan-lab/DRep](https://github.com/sidan-lab/DRep)
-- **Commit History**: [View ${monthName} commits](https://github.com/sidan-lab/DRep/commits/main/?since=${currentMonth}-01&until=${currentMonth}-${lastDayOfMonth})
-- **Pull Requests**: [View ${monthName} PRs](https://github.com/sidan-lab/DRep/pulls?q=is%3Apr+created%3A${currentMonth}-01..${currentMonth}-${lastDayOfMonth})
-
-### MeshJS
-- **Repository**: [MeshJS/governance](https://github.com/MeshJS/governance)
-- **Commit History**: [View ${monthName} commits](https://github.com/MeshJS/governance/commits/main/?since=${currentMonth}-01&until=${currentMonth}-${lastDayOfMonth})
-- **Pull Requests**: [View ${monthName} PRs](https://github.com/MeshJS/governance/pulls?q=is%3Apr+created%3A${currentMonth}-01..${currentMonth}-${lastDayOfMonth})
-
+${generateRepoActivityLinks(repos, currentMonth, lastDayOfMonth)}
 ---
 
 ## 📈 Quick Stats
 - **Reporting Period**: ${currentMonth}-01 to ${currentMonth}-${lastDayOfMonth}
 - **Previous Month**: ${previousMonthName}
-- **Repositories Tracked**: 3
+- **Repositories Tracked**: ${repos.length}
 
 ---
 
@@ -72,29 +145,14 @@ This report provides a comprehensive overview of development activities across o
 ### Repository Comparison
 | Repository | Commits | PRs | Issues | Stars |
 |------------|---------|-----|--------|-------|
-| Treasury Guild | [View](https://github.com/treasuryguild/treasury-apis/commits/main/?since=${currentMonth}-01&until=${currentMonth}-${lastDayOfMonth}) | [View](https://github.com/treasuryguild/treasury-apis/pulls?q=is%3Apr+created%3A${currentMonth}-01..${currentMonth}-${lastDayOfMonth}) | [View](https://github.com/treasuryguild/treasury-apis/issues?q=is%3Aissue+created%3A${currentMonth}-01..${currentMonth}-${lastDayOfMonth}) | [View](https://github.com/treasuryguild/treasury-apis/stargazers) |
-| Sidan Labs | [View](https://github.com/sidan-lab/DRep/commits/main/?since=${currentMonth}-01&until=${currentMonth}-${lastDayOfMonth}) | [View](https://github.com/sidan-lab/DRep/pulls?q=is%3Apr+created%3A${currentMonth}-01..${currentMonth}-${lastDayOfMonth}) | [View](https://github.com/sidan-lab/DRep/issues?q=is%3Aissue+created%3A${currentMonth}-01..${currentMonth}-${lastDayOfMonth}) | [View](https://github.com/sidan-lab/DRep/stargazers) |
-| MeshJS | [View](https://github.com/MeshJS/governance/commits/main/?since=${currentMonth}-01&until=${currentMonth}-${lastDayOfMonth}) | [View](https://github.com/MeshJS/governance/pulls?q=is%3Apr+created%3A${currentMonth}-01..${currentMonth}-${lastDayOfMonth}) | [View](https://github.com/MeshJS/governance/issues?q=is%3Aissue+created%3A${currentMonth}-01..${currentMonth}-${lastDayOfMonth}) | [View](https://github.com/MeshJS/governance/stargazers) |
+${generateRepoComparisonTable(repos, currentMonth, lastDayOfMonth)}
 
 ---
 
 ## 🔍 Detailed Analysis
 
-### Treasury Guild
-- **Focus**: Treasury management and financial APIs
-- **Key Areas**: Payment processing, financial calculations, treasury operations
-- **Recent Activity**: Check commit history for latest developments
-
-### Sidan Labs
-- **Focus**: Decentralized reputation
-- **Key Areas**: Data fetching, data processing, dashboards, and more
-- **Recent Activity**: Check commit history for latest developments
-
-### MeshJS
-- **Focus**: Decentralized reputation
-- **Key Areas**: Data fetching, data processing, dashboards, and more
-- **Recent Activity**: Check commit history for latest developments
-
+${generateEstimatesSummary(repos)}
+${generateDetailedAnalysis(repos)}
 ---
 
 ## 🎯 Next Steps

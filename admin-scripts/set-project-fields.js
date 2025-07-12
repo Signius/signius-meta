@@ -1,15 +1,16 @@
 // admin-scripts/set-project-fields.js
 
 const { graphql } = require("@octokit/graphql");
+const fs = require("fs");
+const path = require("path");
 
 const token = process.env.GITHUB_TOKEN;
 const repo = process.env.GITHUB_REPOSITORY; // e.g. "owner/repo"
 const issueTitle = process.env.ISSUE_TITLE; // e.g. "Monthly Report for 2025-07"
 let startDate = process.env.START_DATE;   // e.g. "2025-07" or "2025-07-01"
 let endDate = process.env.END_DATE;         // e.g. "2025-07-30" or undefined
-const estimate = process.env.ESTIMATE;      // e.g. "5"
 
-if (!token || !repo || !issueTitle || !startDate || !estimate) {
+if (!token || !repo || !issueTitle || !startDate) {
   console.error("Missing required environment variables");
   process.exit(1);
 }
@@ -31,6 +32,29 @@ if (!endDate) {
 }
 
 const [owner, name] = repo.split("/");
+
+// Read config file to get estimate
+const configPath = path.join(__dirname, "repos-config.json");
+let config;
+try {
+  config = JSON.parse(fs.readFileSync(configPath, "utf8"));
+} catch (error) {
+  console.error("Error reading config file:", error.message);
+  process.exit(1);
+}
+
+// Calculate total estimate from all repositories
+const totalEstimate = config.repositories.reduce((sum, repo) => {
+  return sum + (repo.estimate || 0);
+}, 0);
+
+console.log(`Total estimate from all repositories: ${totalEstimate}`);
+console.log(`Repositories included:`);
+config.repositories.forEach(repo => {
+  console.log(`  - ${repo.organization}/${repo.repository}: ${repo.estimate || 0}`);
+});
+
+const estimate = totalEstimate;
 
 // Project and field IDs from GitHub secrets
 const projectId = process.env.PROJECT_ID;
