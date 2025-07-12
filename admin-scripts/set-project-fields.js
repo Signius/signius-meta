@@ -69,7 +69,35 @@ if (!projectId || !startDateFieldId || !endDateFieldId || !estimateFieldId) {
     process.exit(1);
   }
 
-  // 2. Set project fields (repeat for each field)
+  console.log(`Found issue: ${issue.title} (ID: ${issue.id})`);
+
+  // 2. Add the issue to the project and get the ProjectV2Item ID
+  const { addProjectV2ItemById } = await graphql(
+    `
+      mutation($projectId: ID!, $itemId: ID!) {
+        addProjectV2ItemById(
+          input: {
+            projectId: $projectId
+            itemId: $itemId
+          }
+        ) {
+          item {
+            id
+          }
+        }
+      }
+    `,
+    {
+      projectId,
+      itemId: issue.id,
+      headers: { authorization: `token ${token}` }
+    }
+  );
+
+  const projectItemId = addProjectV2ItemById.item.id;
+  console.log(`Added issue to project. ProjectV2Item ID: ${projectItemId}`);
+
+  // 3. Set project fields using the ProjectV2Item ID
   const updateField = async (fieldId, value) => {
     await graphql(
       `
@@ -90,7 +118,7 @@ if (!projectId || !startDateFieldId || !endDateFieldId || !estimateFieldId) {
       `,
       {
         projectId,
-        itemId: issue.id,
+        itemId: projectItemId,
         fieldId,
         value,
         headers: { authorization: `token ${token}` }
