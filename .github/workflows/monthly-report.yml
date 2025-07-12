@@ -21,19 +21,29 @@ jobs:
           echo "CURRENT_MONTH=$CURRENT_MONTH" >> $GITHUB_ENV
           echo "LAST_MONTH=$LAST_MONTH" >> $GITHUB_ENV
 
-          echo "::set-output name=content::### Monthly Report for $CURRENT_MONTH\n\n- https://github.com/Signius/gov-dashboard-template/commits/main/?since=$CURRENT_MONTH-01&until=$CURRENT_MONTH-30\n- https://github.com/Signius/repo-2/commits/main/?since=$CURRENT_MONTH-01&until=$CURRENT_MONTH-30\n- https://github.com/Signius/repo-3/commits/main/?since=$CURRENT_MONTH-01&until=$CURRENT_MONTH-30"
+          node admin-scripts/generate-monthly-report.js > monthly_report.md
+        env:
+          CURRENT_MONTH: ${{ env.CURRENT_MONTH }}
+          LAST_MONTH: ${{ env.LAST_MONTH }}
 
       - name: Create issue
-        uses: peter-evans/create-issue@v4
+        uses: peter-evans/create-issue-from-file@v5
         with:
           title: "Monthly Report for ${{ env.CURRENT_MONTH }}"
-          body: "${{ steps.generate-content.outputs.content }}"
-          labels: "report"
+          content-filepath: monthly_report.md
+          labels: report
+
+      - name: Find last month's report issue
+        id: find-issue
+        run: |
+          number=$(gh issue list --search "Monthly Report for ${{ env.LAST_MONTH }}" --json number,title --jq '.[0].number')
+          echo "issue-number=$number" >> $GITHUB_OUTPUT
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Close last month's issue
-        uses: peter-evans/close-issue@v2
+        if: steps.find-issue.outputs.issue-number != ''
+        uses: peter-evans/close-issue@v3
         with:
-          issue-title: "Monthly Report for ${{ env.LAST_MONTH }}"
-          state: "closed"
-          project-board: "1"
-          status: "done"
+          issue-number: ${{ steps.find-issue.outputs.issue-number }}
+          comment: "Automatically closing last month's report."
