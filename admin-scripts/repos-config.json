@@ -10,7 +10,19 @@
                 "Data processing",
                 "Dashboards"
             ],
-            "estimate": 1500
+            "estimate": 0
+        },
+        {
+            "name": "MeshJs",
+            "organization": "MeshJS",
+            "repository": "governance",
+            "focus": "Decentralized reputation",
+            "keyAreas": [
+                "Data fetching",
+                "Data processing",
+                "Dashboards"
+            ],
+            "estimate": 2500
         }
     ]
 }
