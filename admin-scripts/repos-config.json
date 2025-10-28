@@ -22,7 +22,18 @@
                 "Data processing",
                 "Dashboards"
             ],
-            "estimate": 2500
+            "estimate": 1500
+        },
+        {
+            "name": "MeshJs",
+            "organization": "MeshJS",
+            "repository": "multisig",
+            "focus": "Mesh SDK features",
+            "keyAreas": [
+                "Data fetching",
+                "Data processing"
+            ],
+            "estimate": 1500
         }
     ]
 }
