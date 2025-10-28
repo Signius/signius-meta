@@ -1,7 +1,7 @@
 {
     "repositories": [
         {
-            "name": "Sidan Labs - DRep",
+            "name": "sidan-lab/DRep",
             "organization": "sidan-lab",
             "repository": "DRep",
             "focus": "Decentralized reputation",
@@ -13,7 +13,7 @@
             "estimate": 0
         },
         {
-            "name": "MeshJs - governance",
+            "name": "MeshJs/governance",
             "organization": "MeshJS",
             "repository": "governance",
             "focus": "Decentralized reputation",
@@ -25,7 +25,7 @@
             "estimate": 1500
         },
         {
-            "name": "MeshJs - multisig",
+            "name": "MeshJs/multisig",
             "organization": "MeshJS",
             "repository": "multisig",
             "focus": "Mesh SDK features",
